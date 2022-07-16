@@ -1,0 +1,30 @@
+Circuito ((D+B)+(C*A))
+
+*PARAMETROS
+.include 32nm_HP.pm
+
+*DECLARANDO FONTES DE TENSÃO
+Vvdd vdd gnd 1
+
+*DECLARAÇÃO DAS FONTES
+Va a gnd PWL (0ns 0 16ns 0 16.1ns 1)
+Vb b gnd PWL (0ns 0 8ns 0 8.1ns 1 16ns 1 16.1ns 0 24ns 0 24.1ns 1)
+Vc c gnd PWL (0ns 0 4ns 0 4.1ns 1 8ns 1 8.1ns 0 12ns 0 12.1ns 1 16ns 1 16.1ns 0 20ns 0 20.1ns 1 24ns 1 24.1ns 0 28ns 0 28.1ns 1)
+Vd d gnd PWL (0ns 0 2ns 0 2.1ns 1 4ns 1 4.1ns 0 6ns 0 6.1ns 1 8ns 1 8.1ns 0 10ns 0 10.1ns 1 12ns 1 12.1ns 0 14ns 0 14.1ns 1 16ns 1 16.1ns 0 18ns 0 18.1ns 1 20ns 1 20.1ns 0 22ns 0 22.1ns 1 24ns 1 24.1ns 0 26ns 0 26.1ns 1 28ns 1 28.1ns 0 30ns 0 30.1ns 1)
+
+*DECLARANDO O CIRCUITO
+MpC vdd c xca vdd      PMOS w=140n l=32n
+MpA vdd a xca vdd      PMOS w=140n l=32n
+MpD xca d xb vdd       PMOS w=140n l=32n
+MpB xb b s vdd         PMOS w=140n l=32n
+
+MnD s d gnd gnd        NMOS w=70n l=32n
+MnB s b gnd gnd        NMOS w=70n l=32n
+MnC s c xa gnd         NMOS w=70n l=32n
+MnA xa a gnd gnd       NMOS w=70n l=32n
+
+*SIMULAÇÃO TRANSIENTE DE 50ns COM PASSO DE 0.1ns
+.tran 0.1ns 32ns
+
+*FIM DO ARQUIVO SPICE
+.end
