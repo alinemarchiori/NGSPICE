@@ -1,10 +1,10 @@
-
+import math
 lista_de_linhas_arquivo_final = []
 
 
 def entrada_de_dados():
     global lista_de_linhas_arquivo_final
-    nome_circuito = input("Digite o nome do circuito")
+    nome_circuito = input("Digite o nome do circuito: ")
     ini_string = "e0"
 
     return nome_circuito, ini_string
@@ -29,7 +29,7 @@ def cria_arquivo_spice(nome_circuito):
 
     return arquivo
 
-
+# Escreve uma única vez no arquivo (chamar apenas no final)
 def escreve_no_arquivo_spice(arquivo, dados_para_o_arquivo):
     for item in dados_para_o_arquivo:
         arquivo.write(item)
@@ -38,13 +38,68 @@ def escreve_no_arquivo_spice(arquivo, dados_para_o_arquivo):
     arquivo.close()
 
 
-def gera_tabela_verdade(saida_tabela):
+def define_numero_de_fontes(tamanho_saida):
+    numero_de_fontes = math.log(tamanho_saida, 2)
+
+    return int(numero_de_fontes)
 
 
+def gera_tabela_verdade(numero_de_fontes, saida_tabela):
+    quantidade_de_zeros = len(saida_tabela)
+    tabela = []
+    coluna = []
+    for numero in range(numero_de_fontes):
+        quantidade_de_zeros //= 2
+        
+        while len(coluna) < 8:
+            for zero in range(quantidade_de_zeros):
+                coluna.append(0)
 
-def pwl():
-    pass
+            for um in range(quantidade_de_zeros):
+                coluna.append(1)
+        
+        tabela.append(coluna)
+        coluna = []
+   
+    for caracter in saida_tabela:
+        coluna.append(int(caracter))
 
+    tabela.append(coluna)
+
+    return tabela
+
+
+def pwl(tabela_verdade):
+    pwls = []
+    numero_de_fontes = len(tabela_verdade) - 1
+    numero_de_saidas = len(tabela_verdade[-1])  
+    nome = 0
+    for elemento in tabela_verdade:
+        intervalo = ''
+        for sinal in range(len(elemento) - 1):
+            if elemento[sinal] != elemento[sinal + 1]:
+                intervalo += f'{(sinal-1) * 2}ns {elemento[sinal]} {((sinal-1) * 2) + 0.1}ns {elemento[sinal + 1]} '
+
+        string_fonte = f'V{nome} {nome} gnd PWL (0ns 0 {intervalo})'
+        pwls.append(string_fonte)
+        nome += 1
+
+    return pwls
 
 def atrasos():
     pass
+
+
+def main():
+    nome, string_hexadecimal = entrada_de_dados()
+    string_binario = gera_binario(string_hexadecimal)
+    print(string_binario)
+    log_fontes = define_numero_de_fontes(len(string_binario))
+    print(log_fontes)
+    tabela_verdade = gera_tabela_verdade(log_fontes, string_binario)
+    print(tabela_verdade)
+    lista_pwls = pwl(tabela_verdade)
+    for i in lista_pwls:
+        print(i)
+
+main()
