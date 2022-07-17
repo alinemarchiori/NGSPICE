@@ -23,7 +23,7 @@ MnB s b gnd gnd        NMOS w=128n l=32n
 MnC s c xa gnd         NMOS w=128n l=32n
 MnA xa a gnd gnd       NMOS w=128n l=32n
 
-*SIMULAÇÃO TRANSIENTE DE 50ns COM PASSO DE 0.1ns
+*SIMULAÇÃO TRANSIENTE DE 32ns COM PASSO DE 0.1ns
 .tran 0.1ns 32ns
              
 .measure tran tphl_AB trig v(d) val='0.5*1' rise=1
