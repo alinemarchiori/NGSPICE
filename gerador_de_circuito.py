@@ -4,9 +4,9 @@ lista_de_linhas_arquivo_final = []
 def entrada_de_dados():
     global lista_de_linhas_arquivo_final
     nome_circuito = input("Digite o nome do circuito: ")
-    ini_string = "e0"
+    valor_hexa = str(input("Digite o valor em hexadecimal: "))
 
-    return nome_circuito, ini_string
+    return nome_circuito, valor_exa
 
 
 def gera_binario(dado_de_entrada):
