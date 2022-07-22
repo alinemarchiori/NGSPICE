@@ -1,0 +1,38 @@
+Circuito ((D+B)+(C*A)) atrasos 1 e 2
+
+*PARAMETROS
+.include 32nm_HP.pm
+
+*DECLARANDO FONTES DE TENSÃO
+Vvdd vdd gnd 1 
+
+*DECLARAÇÃO DAS FONTES
+Va a gnd PWL (0ns 0)
+Vb b gnd PWL (0ns 0)
+Vc c gnd PWL (0ns 0)
+Vd d gnd PWL (0ns 0 2ns 0 2.1ns 1 4ns 1 4.1ns 0 6ns 0 6.1ns 1 8ns 1 8.1ns 0 10ns 0 10.1ns 1 12ns 1 12.1ns 0 14ns 0 14.1ns 1 16ns 1 16.1ns 0 18ns 0 18.1ns 1 20ns 1 20.1ns 0 22ns 0 22.1ns 1 24ns 1 24.1ns 0 26ns 0 26.1ns 1 28ns 1 28.1ns 0 30ns 0 30.1ns 1)
+
+*DECLARANDO O CIRCUITO
+MpC vdd c xca vdd      PMOS w=384n l=32n
+MpA vdd a xca vdd      PMOS w=384n l=32n
+MpD xca d xb vdd       PMOS w=384n l=32n
+MpB xb b s vdd         PMOS w=384n l=32n
+
+MnD s d gnd gnd        NMOS w=128n l=32n
+MnB s b gnd gnd        NMOS w=128n l=32n
+MnC s c xa gnd         NMOS w=128n l=32n
+MnA xa a gnd gnd       NMOS w=128n l=32n
+
+*SIMULAÇÃO TRANSIENTE DE 32ns COM PASSO DE 0.1ns
+.tran 0.1ns 32ns
+             
+.measure tran tphl_AB trig v(d) val='0.5*1' rise=1
+
+                 + targ v(s) val='0.5*1' fall=1
+
+.measure tran tplh_BA trig v(d) val='0.5*1' fall=1
+
+                 + targ v(s) val='0.5*1' rise=1
+
+*FIM DO ARQUIVO SPICE
+.end

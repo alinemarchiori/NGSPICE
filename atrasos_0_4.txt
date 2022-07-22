@@ -1,0 +1,25 @@
+atrasos_0_4
+
+*PARAMETROS
+.include 32nm_HP.pm
+
+*DECLARANDO FONTES DE TENSAO
+Vvdd vdd gnd 1
+
+*DECLARACAO DAS FONTES
+Vfonte0 fonte0 gnd PWL (0ns 0 8ns 0 8.1ns 1 )
+Vfonte1 fonte1 gnd PWL (0ns 0)
+Vfonte2 fonte2 gnd PWL (0ns 0)
+
+*DECLARAR O CIRCUITO
+
+*...
+
+*SIMULACAO TRANSIENTE DE 32ns COM PASSO DE 0.1ns
+.tran 0.1ns 32ns
+
+.measure tran tphl_l0_l4 trig v(fonte0) val='0.5*1' rise=1 + targ v(saida) val='0.5*1' fall=1
+.measure tran tplh_l4_l0 trig v(fonte0) val='0.5*1' fall=1 + targ v(saida) val='0.5*1' rise=1
+
+*FIM DO ARQUIVO SPICE
+.end
