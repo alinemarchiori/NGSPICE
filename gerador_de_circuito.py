@@ -1,13 +1,13 @@
 import math
 lista_de_linhas_arquivo_final = []
+pwls_valor = []
 
 def entrada_de_dados():
     global lista_de_linhas_arquivo_final
     nome_circuito = input("Digite o nome do circuito: ")
-    valor_hexa = str(input("Digite o valor em hexadecimal: "))
+    ini_string = str(input("Digite o valor em hexadecimal: "))
 
-    return nome_circuito, valor_exa
-
+    return nome_circuito, ini_string
 
 def gera_binario(dado_de_entrada):
     global lista_de_linhas_arquivo_final
@@ -72,23 +72,39 @@ def gera_tabela_verdade(numero_de_fontes, saida_tabela):
 
 
 def pwl(tabela_verdade):
+    global pwls_valor
     pwls = []
     for elemento in range(len(tabela_verdade) - 1):
         intervalo = f'Vfonte{elemento} fonte{elemento} gnd PWL (0ns 0 '
+        inicial = f'(0ns 0 '
 
         for sinal in range(len(tabela_verdade[elemento]) - 1):
 
             if tabela_verdade[elemento][sinal] != tabela_verdade[elemento][sinal + 1] and sinal == len(tabela_verdade[elemento]) - 2:
                 intervalo += f'{(sinal+1)*2}ns {tabela_verdade[elemento][sinal]} {((sinal+1)*2) + 0.1}ns {tabela_verdade[elemento][sinal + 1]}'
+                inicial += f'{(sinal+1)*2}ns {tabela_verdade[elemento][sinal]} {((sinal+1)*2) + 0.1}ns {tabela_verdade[elemento][sinal + 1]}'
 
             elif tabela_verdade[elemento][sinal] != tabela_verdade[elemento][sinal + 1]:
                 intervalo += f'{(sinal+1)*2}ns {tabela_verdade[elemento][sinal]} {((sinal+1)*2) + 0.1}ns {tabela_verdade[elemento][sinal + 1]} '
+                inicial += f'{(sinal+1)*2}ns {tabela_verdade[elemento][sinal]} {((sinal+1)*2) + 0.1}ns {tabela_verdade[elemento][sinal + 1]} ' 
 
         intervalo += ')'
+        inicial += ')'
         pwls.append(intervalo)
+        pwls_valor.append(inicial)
 
     return pwls
 
+def altera_valor_pwls(pwls):
+    lista_aux =[]
+    ultima_fonte = pwls_valor[-1]
+    for elemento in range(len(pwls)):
+        name = f'Vfonte{elemento} fonte{elemento} gnd PWL '
+        name += ultima_fonte
+        lista_aux.append(name)
+    
+    return lista_aux
+    
 
 def define_pwl_em_uso(pwls, fonte):
     global lista_de_linhas_arquivo_final
@@ -153,6 +169,8 @@ def main():
 
     lista_pwls = pwl(tabela_verdade)
 
-    atrasos_measure(tabela_verdade, lista_pwls)
+    pwls_valor = altera_valor_pwls(lista_pwls)
+
+    atrasos_measure(tabela_verdade, pwls_valor)
 
 main()
