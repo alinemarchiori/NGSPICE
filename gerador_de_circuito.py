@@ -6,7 +6,7 @@ def entrada_de_dados():
     nome_circuito = input("Digite o nome do circuito: ")
     valor_hexa = str(input("Digite o valor em hexadecimal: "))
 
-    return nome_circuito, valor_exa
+    return nome_circuito, valor_hexa
 
 
 def gera_binario(dado_de_entrada):
