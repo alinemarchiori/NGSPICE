@@ -1,20 +1,28 @@
 import math
+import sys
+
 lista_de_linhas_arquivo_final = []
+pwls_valor = []
 
 def entrada_de_dados():
     global lista_de_linhas_arquivo_final
     nome_circuito = input("Digite o nome do circuito: ")
-    ini_string = "e0"
+    ini_string = str(input("Digite o valor em hexadecimal: "))
+    #print(format(int(ini_string, 16), "b"))
 
     return nome_circuito, ini_string
 
-
 def gera_binario(dado_de_entrada):
     global lista_de_linhas_arquivo_final
-    binario = bin(int(dado_de_entrada, 16))
-    saida_tabela_verdade = f'{binario[2:]}'
-    
-    return saida_tabela_verdade
+    #saida_tabela_verdade = format(int(dado_de_entrada, 16), "b")
+    saida_tabela_verdade = dado_de_entrada
+    i = 0
+    while True:
+        i += 1
+        if len(saida_tabela_verdade) == 2**i:
+            return saida_tabela_verdade
+        elif i >= len(saida_tabela_verdade):
+            sys.exit('Tamanho invalido')
 
 
 def cria_arquivo_spice(nome_circuito):
@@ -71,39 +79,42 @@ def gera_tabela_verdade(numero_de_fontes, saida_tabela):
     return tabela
 
 
-def pwl(tabela_verdade):
-    pwls = []
-    for elemento in range(len(tabela_verdade) - 1):
-        intervalo = f'Vfonte{elemento} fonte{elemento} gnd PWL (0ns 0 '
-
-        for sinal in range(len(tabela_verdade[elemento]) - 1):
-
-            if tabela_verdade[elemento][sinal] != tabela_verdade[elemento][sinal + 1] and sinal == len(tabela_verdade[elemento]) - 2:
-                intervalo += f'{(sinal+1)*2}ns {tabela_verdade[elemento][sinal]} {((sinal+1)*2) + 0.1}ns {tabela_verdade[elemento][sinal + 1]}'
-
-            elif tabela_verdade[elemento][sinal] != tabela_verdade[elemento][sinal + 1]:
-                intervalo += f'{(sinal+1)*2}ns {tabela_verdade[elemento][sinal]} {((sinal+1)*2) + 0.1}ns {tabela_verdade[elemento][sinal + 1]} '
-
-        intervalo += ')'
-        pwls.append(intervalo)
-
-    return pwls
-
-
-def define_pwl_em_uso(pwls, fonte):
+def atrasos_por_pwl(linha_atraso1,linha_atraso2):
     global lista_de_linhas_arquivo_final
+    pwls = []
+    elemento = 0
+    for elemento in range(len(linha_atraso1)-1):
+        if linha_atraso1[elemento] != linha_atraso2[elemento]:
+            intervalo = f'Vfonte{elemento} fonte{elemento} gnd PWL (0ns 0 2ns 0 2.1ns 1 4ns 1 4.1ns 0 6ns 0)'
+            lista_de_linhas_arquivo_final.append(intervalo)
 
-    for pwl in range(len(pwls)):
-        if pwl == fonte:
-            lista_de_linhas_arquivo_final.append(pwls[pwl])
+        elif linha_atraso1[elemento] == 1 and linha_atraso2[elemento] == 1:
+            lista_de_linhas_arquivo_final.append(f'Vfonte{elemento} fonte{elemento} gnd PWL (0ns 1)')
         else:
-            lista_de_linhas_arquivo_final.append(f'Vfonte{pwl} fonte{pwl} gnd PWL (0ns 0)')
+            lista_de_linhas_arquivo_final.append(f'Vfonte{elemento} fonte{elemento} gnd PWL (0ns 0)')
 
+def pega_linha(tabela_verdade):
+    tabela_verdade_linha = []
 
-def atrasos_measure(tabela_verdade, pwls):
+    for linha in range(len(tabela_verdade[-1])):
+        linha_lista = []
+        elemento = 0
+
+        for elemento in range(len(tabela_verdade)):
+            linha_lista.append(tabela_verdade[elemento][linha])
+
+        tabela_verdade_linha.append(linha_lista)
+    
+    return tabela_verdade_linha
+        
+def atrasos_measure(tabela_verdade):#,pwls):
     global lista_de_linhas_arquivo_final
     comando = f'.measure tran '
     atraso_tphl, atraso_tplh = '', ''
+    tabela_por_linhas = pega_linha(tabela_verdade)
+    
+    for i in tabela_por_linhas:
+        print(i)
 
     for linha in range(len(tabela_verdade[0]) - 1):
         for linha_abaixo in range(linha + 1, len(tabela_verdade[0])):
@@ -115,7 +126,7 @@ def atrasos_measure(tabela_verdade, pwls):
                 if tabela_verdade[sinal][linha] != tabela_verdade[sinal][linha_abaixo]:
                     fonte = sinal
                     alterou += 1
-            
+    
             if alterou == 1 and tabela_verdade[-1][linha] != tabela_verdade[-1][linha_abaixo]:
                 if tabela_verdade[-1][linha] == 1:
                     atraso_tphl = comando + f'tphl_l{linha}_l{linha_abaixo} trig v(fonte{fonte}) val=\'0.5*1\' rise=1 + targ v(saida) val=\'0.5*1\' fall=1'
@@ -126,8 +137,10 @@ def atrasos_measure(tabela_verdade, pwls):
                     atraso_tphl = comando + f'tphl_l{linha}_l{linha_abaixo} trig v(fonte{fonte}) val=\'0.5*1\' fall=1 + targ v(saida) val=\'0.5*1\' rise=1'
 
                 arquivo = cria_arquivo_spice(f'atrasos_{linha}_{linha_abaixo}')
-
-                define_pwl_em_uso(pwls, fonte)
+                atraso_1 = tabela_por_linhas[linha]
+                atraso_2 = tabela_por_linhas[linha_abaixo]
+                
+                atrasos_por_pwl(atraso_1, atraso_2)
 
                 lista_de_linhas_arquivo_final.append('\n*DECLARAR O CIRCUITO\n\n*...\n')
                 lista_de_linhas_arquivo_final.append('*SIMULACAO TRANSIENTE DE 32ns COM PASSO DE 0.1ns')
@@ -151,8 +164,6 @@ def main():
 
     tabela_verdade = gera_tabela_verdade(log_fontes, string_binario)
 
-    lista_pwls = pwl(tabela_verdade)
-
-    atrasos_measure(tabela_verdade, lista_pwls)
+    atrasos_measure(tabela_verdade)
 
 main()
