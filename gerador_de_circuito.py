@@ -1,5 +1,4 @@
 import math
-import sys
 
 lista_de_linhas_arquivo_final = []
 pwls_valor = []
@@ -8,20 +7,20 @@ def entrada_de_dados():
     global lista_de_linhas_arquivo_final
     nome_circuito = input("Digite o nome do circuito: ")
     ini_string = str(input("Digite o valor em hexadecimal: "))
+    print(format(int(ini_string, 16), "b"), f'tamanho da string: {len(ini_string)}')
 
     return nome_circuito, ini_string
 
 def gera_binario(dado_de_entrada):
     global lista_de_linhas_arquivo_final
-    binario = bin(int(dado_de_entrada, 16))
-    saida_tabela_verdade = f'{binario[2:]}'
-    i = 0
+    saida_tabela_verdade = format(int(dado_de_entrada, 16), "b")
+    
     while True:
-        i += 1
-        if len(saida_tabela_verdade) == 2**i:
+        if len(saida_tabela_verdade) < len(dado_de_entrada) * 4:
+            saida_tabela_verdade = '0' + saida_tabela_verdade
+        else:
+            print(saida_tabela_verdade)
             return saida_tabela_verdade
-        elif i >= len(saida_tabela_verdade):
-            sys.exit('Tamanho invalido')
 
 
 def cria_arquivo_spice(nome_circuito):
@@ -76,39 +75,6 @@ def gera_tabela_verdade(numero_de_fontes, saida_tabela):
     tabela.append(coluna)
 
     return tabela
-
-
-#def pwl(tabela_verdade):
-    pwls = []
-    for elemento in range(len(tabela_verdade) - 1):
-        intervalo = f'Vfonte{elemento} fonte{elemento} gnd PWL (0ns 0 '
-        inicial = f'(0ns 0 '
-
-        for sinal in range(len(tabela_verdade[elemento]) - 1):
-
-            if tabela_verdade[elemento][sinal] != tabela_verdade[elemento][sinal + 1] and sinal == len(tabela_verdade[elemento]) - 2:
-                intervalo += f'{(sinal+1)*2}ns {tabela_verdade[elemento][sinal]} {((sinal+1)*2) + 0.1}ns {tabela_verdade[elemento][sinal + 1]}'
-                inicial += f'{(sinal+1)*2}ns {tabela_verdade[elemento][sinal]} {((sinal+1)*2) + 0.1}ns {tabela_verdade[elemento][sinal + 1]}'
-
-            elif tabela_verdade[elemento][sinal] != tabela_verdade[elemento][sinal + 1]:
-                intervalo += f'{(sinal+1)*2}ns {tabela_verdade[elemento][sinal]} {((sinal+1)*2) + 0.1}ns {tabela_verdade[elemento][sinal + 1]} '
-                inicial += f'{(sinal+1)*2}ns {tabela_verdade[elemento][sinal]} {((sinal+1)*2) + 0.1}ns {tabela_verdade[elemento][sinal + 1]} ' 
-
-        intervalo += ')'
-        inicial += ')'
-        pwls.append(intervalo)
-        pwls_valor.append(inicial)
-
-    return pwls
-
-#def define_pwl_em_uso(pwls, fonte):
-    global lista_de_linhas_arquivo_final
-
-    for pwl in range(len(pwls)):
-        if pwl == fonte:
-            lista_de_linhas_arquivo_final.append(pwls[pwl])
-        else:
-            lista_de_linhas_arquivo_final.append(f'Vfonte{pwl} fonte{pwl} gnd PWL (0ns 0)')
 
 def atrasos_por_pwl(linha_atraso1,linha_atraso2):
     global lista_de_linhas_arquivo_final
@@ -165,10 +131,8 @@ def atrasos_measure(tabela_verdade):#,pwls):
                 arquivo = cria_arquivo_spice(f'atrasos_{linha}_{linha_abaixo}')
                 atraso_1 = tabela_por_linhas[linha]
                 atraso_2 = tabela_por_linhas[linha_abaixo]
-                print(atraso_1, atraso_2, fonte)
+     
                 atrasos_por_pwl(atraso_1, atraso_2)
-
-                #define_pwl_em_uso(pwls, fonte)
 
                 lista_de_linhas_arquivo_final.append('\n*DECLARAR O CIRCUITO\n\n*...\n')
                 lista_de_linhas_arquivo_final.append('*SIMULACAO TRANSIENTE DE 32ns COM PASSO DE 0.1ns')
@@ -192,8 +156,6 @@ def main():
 
     tabela_verdade = gera_tabela_verdade(log_fontes, string_binario)
 
-    #lista_pwls = pwl(tabela_verdade)
-
-    atrasos_measure(tabela_verdade)#, lista_pwls)
+    atrasos_measure(tabela_verdade)
 
 main()
