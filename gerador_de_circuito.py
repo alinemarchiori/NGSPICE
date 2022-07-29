@@ -1,5 +1,4 @@
 import math
-import sys
 
 lista_de_linhas_arquivo_final = []
 pwls_valor = []
@@ -8,16 +7,16 @@ def entrada_de_dados():
     global lista_de_linhas_arquivo_final
     nome_circuito = input("Digite o nome do circuito: ")
     ini_string = str(input("Digite o valor em hexadecimal: "))
-    print(format(int(ini_string, 16), "b"))
+    print(format(int(ini_string, 16), "b"), f'tamanho da string: {len(ini_string)}')
 
     return nome_circuito, ini_string
 
 def gera_binario(dado_de_entrada):
     global lista_de_linhas_arquivo_final
     saida_tabela_verdade = format(int(dado_de_entrada, 16), "b")
-    #saida_tabela_verdade = dado_de_entrada
+    
     while True:
-        if len(saida_tabela_verdade) % 2 != 0:
+        if len(saida_tabela_verdade) < len(dado_de_entrada)*4:
             saida_tabela_verdade = '0' + saida_tabela_verdade
         else:
             print(saida_tabela_verdade)
