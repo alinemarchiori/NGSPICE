@@ -8,21 +8,20 @@ def entrada_de_dados():
     global lista_de_linhas_arquivo_final
     nome_circuito = input("Digite o nome do circuito: ")
     ini_string = str(input("Digite o valor em hexadecimal: "))
-    #print(format(int(ini_string, 16), "b"))
+    print(format(int(ini_string, 16), "b"))
 
     return nome_circuito, ini_string
 
 def gera_binario(dado_de_entrada):
     global lista_de_linhas_arquivo_final
-    #saida_tabela_verdade = format(int(dado_de_entrada, 16), "b")
-    saida_tabela_verdade = dado_de_entrada
-    i = 0
+    saida_tabela_verdade = format(int(dado_de_entrada, 16), "b")
+    #saida_tabela_verdade = dado_de_entrada
     while True:
-        i += 1
-        if len(saida_tabela_verdade) == 2**i:
+        if len(saida_tabela_verdade) % 2 != 0:
+            saida_tabela_verdade = '0' + saida_tabela_verdade
+        else:
+            print(saida_tabela_verdade)
             return saida_tabela_verdade
-        elif i >= len(saida_tabela_verdade):
-            sys.exit('Tamanho invalido')
 
 
 def cria_arquivo_spice(nome_circuito):
